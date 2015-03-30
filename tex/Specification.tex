@@ -1,6 +1,5 @@
 \newcommand{\symex}{\mathbb{S}}
 
-\newcommand{\constantprop}{\mathbb{CO}}
 \newcommand{\constraints}{\mathbb{C}}
 \newcommand{\location}{\mathbb{L}}
 \newcommand{\composition}{\mathscr{C}}
@@ -27,13 +26,13 @@
 \newcommand{\satisfies}{\vDash}
 
 \section{Specification}
-The symbolic execution CPA is a composite CPA of a \emph{location CPA}, a \emph{symbolic value CPA} which tracks and computes the deterministic and non-deterministic values of variables and a \emph{constraints CPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of a composite CPA and location CPA are used as defined in \cite{Beyer2007}.
+The symbolic execution CPA is a composite CPA of the \emph{location CPA}, the \emph{symbolic value CPA} which tracks and computes the deterministic and non-deterministic values of variables and the \emph{constraints CPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of composite CPA and location CPA are used as defined in \cite{Beyer2007}.
 
-For the sake of formal simplicity, we assume that all values are integers.
+For the sake of formal simplicity, we assume that all values are integers and that a program only consists of assignments and assumptions.
 
 \subsection{Symbolic value CPA}
 The described CPA is an extension of the priorly mentioned value analysis CPA.
-Instead of using a bottom element $\bot_{\valueset_\constantprop}$, we represent an unreachable state through the absence of a valid transfer.
+Instead of using a bottom element $\bot$, we represent an unreachable state through the absence of a valid transfer.
 The symbolic value CPA is defined as
 \[\symex = (D_\symex, \transfer_\symex, merge^{sep}\ stop^{sep})\]
 with abstract domain $D_\symex$, transfer relation $\transfer_\symex$, merge operator $merge^{sep}$ and stop operator $stop^{sep}$.
@@ -50,10 +49,10 @@ with $C$ being the set of concrete program states, $\symlattice$ the semi-lattic
                   v_\top
                 )        
 \]
-The elements of the semi-lattice are total functions of $V_\symex = X \rightarrow (\valueset_\constantprop \cup \valueset_\symex)$ mapping program variables $X$ to a concrete value $\valueset_\constantprop = \integerset \cup {\top_\valueset}$
-or to a symbolic value $\valueset_\symex = \symidset \cup \symexpset$.
+The elements of the semi-lattice are partial functions of $V_\symex = X \rightarrow (\integerset \cup \valueset_\symex)$ mapping program variables in its definition range to concrete values of $\integerset$
+or to symbolic values $\valueset_\symex = \symidset \cup \symexpset$.
 $\symidset$ describes all symbolic identifiers and
-$\symexpset$ is the set of all valid symbolic expressions. Each expression is a symbolic expression, if at least one symbolic identifier occurs in it.
+$\symexpset$ is the set of all valid symbolic expressions. Each expression is a symbolic expression if at least one symbolic identifier occurs in it.
 %% Old, replaced by "if at least one symbolic identifier occurs in it"
 %Symbolic expressions are inductively defined as follows:
 %  (1) Each expression over concrete values and symbolic identifiers is a symbolic expression, if at least one symbolic identifier occurrs.
@@ -63,55 +62,55 @@ $\symexpset$ is the set of all valid symbolic expressions. Each expression is a 
 %    \text{(2) }& c, d \in S_E \Rightarrow (c \circ d) \in \symexpset
 %  \end{align*}
 %using $\circ \in \{+, -, *, / , \% , \ll , \gg , \&, |, \oplus\}$.
-$\top_\valueset$ represents an unknown value.
+The definition range of a function $f$ is defined as $\text{def}(f) = \{x\ | \exists y: f(x) = y\}$. The definition range of an abstract variable assignment of the type $V_\symex$ consists of all program variables $x \in X$ whose value is known, with $X$ being the set of all program variables occurring in the program. There are multiple reasons for unknown values: Uninitialized variables are unknown, but input values or calls to unknown functions and operations are, too.
 
-The lesser-than-or-equal operator $\lesserEqual$ of $\symlattice$ is defined by
-  \[ v \lesserEqual v' \Leftrightarrow \forall x \in X: v(x) = v'(x) \vee v'(x) = \top_\valueset\text{.} \]
+For two abstract states $v, v' \in V_\symex$, state $v$ is lesser than or equal to $v'$, noted as $v \lesserEqual v'$, if all of the following conditions hold:
+(1) $v'$ must not consist of more value assignments than $v$, that is $\text{def}(v') \subseteq \text{def}(v)$,
+(2) $\forall x \in \text{def}(v'): v'(x) \in \integerset \Rightarrow v'(x) = v(x)$ and
+(3) a bijective function $\text{alias}:\symidset \rightarrow \symidset$ exists
+that maps each symbolic identifier of $\symidset$ to another symbolic identifier,
+so that $\forall x \in \text{def}(v'): v'(x) \in \valueset_\symex \Rightarrow v(x)$ results from $v'(x)$ by replacing all $i \in \symidset$ occurring in $v'(x)$ with $\text{alias}(i)$.
+Constraint 3 ensures that not the symbolic identifier's themselves are compared, but their coverage of concrete states (see the definition of the concretization function below).
+
 The join $\leastupperbound$ holds the least upper bound of two lattice elements $v, v' \in V_\symex$ with
-  \[ (v \leastupperbound v')(x) = \begin{dcases}
-                    v(x) & \text{ if $v(x) = v'(x)$} \\
-                  \top_\valueset & \text{ otherwise }
-                \end{dcases}
-  \].
-
-The top element of $\symlattice$ is defined as $v_\top(x) = \top_\valueset$ for all $x \in X$. 
+  \[ (v \leastupperbound v')(x) = v(x) \text{ for all } x \in \text{def}(v) \cap\ \text{def}(v') \text{ and } v(x) = v'(x) \text{.} \]
+The top element of $\symlattice$ is defined as $v_\top = \{\}$, i.e. no known assignments exist.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ende semi-lattice definition
 % Fortsetzung domain definition
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-A concrete state $c \in C$ is \emph{compliant} to an abstract variable assignment $v$, if an arbitrary, but valid assignment of concrete values to symbolic identfiers $d: S_I \rightarrow \integerset$ exists, so that for all $x \in X$ one of the following conditions is fulfilled:
-(1) the abstract assignment is a concrete value that equals the value in the concrete state, that means $c(x) = v(x)$,
-(2) the abstract assignment $v(x)$ is a symbolic value that can be evaluated to $c(x)$ by replacing all occurring symbolic identifiers $i \in \symidset$ with $d(i)$, or
-(3) $x$ has not occurred yet and as such has no concrete or symbolic value assigned, represented by $v(x) = \top_\valueset$.
+A concrete state $c \in C$ is \emph{compliant} to an abstract variable assignment $v$, if an arbitrary, but valid assignment of concrete values to symbolic identfiers $d: S_I \rightarrow \integerset$ exists, so that for all $x \in def(v)$ one of the following conditions is fulfilled:
+(1) the abstract assignment is a concrete value that equals the value in the concrete state, that means $c(x) = v(x)$, or
+(2) the abstract assignment $v(x)$ is a symbolic value that can be evaluated to $c(x)$ by replacing all occurring symbolic identifiers $i \in \symidset$ with $d(i)$.
 The concretization function $\concretization$ then assigns all compliant concrete states to an abstract state $v$.
 
 % Ende Domaene - Anfang Uebergangsfkt
 The transfer relation $\transfer_\symex$ contains the transfer $v \gtransfer v''$, if one of the following conditions is true:
     \begin{enumerate}[1.]
-      \item $g = (l, assume(p), l')$, $\phi (p, v)$ is satisfiable and for all $x \in X$:
+      \item $g = (l, assume(p), l')$, $\phi (p, v)$ is satisfiable and:
         \[
           v''(x) = \begin{dcases}
-            c    & \parbox[t]{.25\textwidth}{if $c$ only satisfying assignment for $\phi (p, v)$}\\
-            y    & \parbox[t]{.25\textwidth}{if $v(x) = \top_\valueset$ and $x$ appears in $p$. $y \in S_I$ and y is a new value that has not been used in any other state before.}\\
+            c    & \parbox[t]{.25\textwidth}{if $c$ only satisfying assignment for $\phi (p, v)$ and $x \notin$ def$(v)$}\\
+            y    & \parbox[t]{.25\textwidth}{if $x \notin \text{def}(v)$ and $x$ appears in $p$. $y \in S_I$ and $y$ is a new value that has not been used in any other state before}\\
             v(x) & \text{otherwise}              
           \end{dcases}
         \]
-        with \[\phi (p, v) := p \wedge (\displaystyle\bigwedge_{x \in X,\atop {v(x) \in \integerset}} x = v(x))\]
+        with \[\phi (p, v) := p \wedge (\displaystyle\bigwedge_{x \in \text{def}(v),\atop {v(x) \in \integerset}} x = v(x))\]
 
-        Note: $\phi$ performs an over-approximation, as only variables $x \in X$ with an explicit value are considered.
+        Note: $\phi$ performs an over-approximation, as only variables $x \in \text{def}(v)$ with an explicit value are considered.
 
-      \item $g = (l, w := e, l')$ and for all $x \in X$:
+      \item $g = (l, w := e, l')$ and:
         \[
           v''(x) = \begin{dcases}
             eval(e, v') & \text{if $x = w$} \\
-            v'(x)        & \text{otherwise}
+            v'(x)       & \text{if $x \in$ def$(v)$}
           \end{dcases}
         \]
       with \[
          v'(x) = \begin{dcases}
-            y    & \parbox[t]{.25\textwidth}{if $v(x) = \top_\valueset$ and $x$ appears in $e$. $y \in S_I$ and y is a new value that has not been used in any other state before.}\\
-            v(x) & \text{otherwise}
+            y    & \parbox[t]{.25\textwidth}{if $x \notin \text{def}(v)$ and $x$ appears in $e$. $y \in S_I$ and $y$ is a new value that has not been used in any other state before}\\
+            v(x) & \text{if $x \in$ def$(v)$}
           \end{dcases}
       \]
       and $eval(e, v')$ defined as the evaluation of an expression $e$ with the given assignment.
@@ -119,8 +118,10 @@ The transfer relation $\transfer_\symex$ contains the transfer $v \gtransfer v''
 
       \item $v'' = v_\top$.
     \end{enumerate}
-The merge operator $merge^{sep}$ is defined as $merge^{sep}(e, e') = e'$.
-The stop operator $stop^{sep}$ is defined as $stop^{sep}(e, R) = \exists e' \in R: e \lesserEqual e'$
+The merge operator $\text{merge}^{sep}$ is defined as $\text{merge}^{sep}(e, e') = e'$.
+That means no merge is performed for different value states at the same location.
+The stop operator $\text{stop}^{sep}$ considers every state of the reached set independently when checking for coverage.
+It is defined as $\text{stop}^{sep}(e, R) = \exists e' \in R: e \lesserEqual e'$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Beginn ConstraintsCPA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,8 +133,8 @@ The abstract domain $D_\constraints$ is defined by
 with concrete states $C$, the semi-lattice $\constraintlattice$ and concretization function $\concretization$.
 
 The abstract states described by $\constraintlattice = (2^\gamma, \lesserEqual, \leastupperbound, \top)$ consist of constraints of $\gamma$.
-$\gamma$ contains all possible boolean expressions over $\valueset_\constantprop \cup \valueset_\symex$, including symbolic expressions.
-An abstract state is interpreted as the conjunction of all its constraints.
+$\gamma$ contains all possible boolean expressions over $\integerset \cup \valueset_\symex$, including symbolic expressions.
+An abstract state $a \in \constraintlattice$ is interpreted as the conjunction of all its constraints.
 %% Redundant with "all boolean expressions
 %This can be expressed in the following formal way:
 % \begin{align*}
@@ -141,8 +142,7 @@ An abstract state is interpreted as the conjunction of all its constraints.
 %   \text{with } \gamma_B = \{a \circ b\ |\ a, b \in \symlattice\} \text{ and } \circ \in \{ ==, <, \leq , >, \geq \}\text{.}$
 % \end{align*}
 
-$\lesserEqual$ is defined as $a \lesserEqual a' \Leftrightarrow a' \subseteq a$,
-the join $\leastupperbound$ as the intersection: $a \leastupperbound a' = a \cap a'$
+For two given states $a, a' \in \constraintlattice$, state $a$ is lesser than or equal to $a'$, if a bijective funtion $\text{alias}: \symidset \rightarrow \symidset$ exists, so that $a'' \subseteq a$ with $a''$ resulting from $a'$ by replacing all symbolic identifiers $i \in \symidset$ occurring in constraints of $a'$ with $\text{alias}(i)$.
 
 The concretization function $\concretization$ maps an abstract state to all concrete states that satisfy this abstract state's constraints.
         \[ \llbracket a \rrbracket = \{ c \in C |\ c \satisfies \displaystyle\bigwedge_{\varphi \in a} \varphi \} \]
@@ -209,9 +209,9 @@ $\strengthen_{\constraints, \symex} (a, v) = a'$ is defined if $a'$ is the resul
     (7n) edge node [right] {\textbf{return 0}} (e7n)
   ;
 \end{tikzpicture}
-\caption{Analysis of the program in listing \ref{exProg} by the symbolic execution CPA. The locations reported as unreachable are tinted grey. The state is provided as a tuple at each relevant node, the first element being the state of $\symex$, the second of $\constraints$. The state of the location CPA can be derived from the node's numbers.}
+\caption{Analysis of the program in Listing \ref{exProg} by the symbolic execution CPA. The locations reported as unreachable are tinted grey. The state is provided as a tuple at each relevant node, the first element being the state of $\symex$, the second of $\constraints$. The state of the location CPA can be derived from the node's numbers.}
 \label{constGraph}
 \end{figure*}
 
-An analysis of the previous test program using symbolic execution can be seen in figure \ref{constGraph}. 
+An analysis of the previous test program using symbolic execution can be seen in Figure \ref{constGraph}. 
 By storing information about the relationship of variables $a$ and $b$, the CPA can derive at location 6/6' that $b$ can't be smaller than $a$.

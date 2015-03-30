@@ -6,10 +6,12 @@
 \usepackage{enumerate}
 \usepackage{listings}
 \usepackage{tikz}
-\usepackage{url}
+\usepackage[breaklinks]{hyperref}
+\usepackage{needspace}
 \usetikzlibrary{positioning}
 
 \begin{document}
+\sloppy
 \title{Symbolic Execution in CPAchecker}
 \subtitle{}
 \numberofauthors{1}
@@ -25,7 +27,9 @@
 %\end{abstract}
 
 \input{Motivation}
+\Needspace{7\baselineskip}
 \input{Specification}
+\Needspace{7\baselineskip}
 \input{Evaluation}
 
 \bibliographystyle{acm}

@@ -27,13 +27,13 @@ In addition, we specify a new constraints CPA to track constraints on these symb
 
 \begin{tikzpicture}[->,>=stealth, mynode/.style={circle, draw, minimum size=0.5cm}, every node/.style={font=\small}]
 
-  \node[mynode] (0) [label=0:{$\{a \rightarrow \top, b \rightarrow \top \}$}]{0};
-  \node[mynode] (1) [below = 0.5cm of 0, label=0:{$\{a \rightarrow \top, b \rightarrow \top \}$}]{1};
+  \node[mynode] (0) [label=0:{$\{\}$}]{0};
+  \node[mynode] (1) [below = 0.5cm of 0, label=0:{$\{\}$}]{1};
   \node[mynode] (2) [below left = 1cm of 1]{2};
   \node[mynode] (4) [below right = 1cm of 1]{4};
-  \node[mynode] (3) [below = 0.5cm of 2, label=west:{$\{a \rightarrow \top, b \rightarrow \top \}$}]{3};
-  \node[mynode] (5) [below = 0.5cm of 4, label=0:{$\{a \rightarrow \top, b \rightarrow \top \}$}]{5};
-  \node[mynode] (6) [below right = 0.8cm of 3, label=north:merge, label=0:{$\{a \rightarrow \top, b \rightarrow \top \}$}]{6};
+  \node[mynode] (3) [below = 0.5cm of 2, label=west:{$\{\}$}]{3};
+  \node[mynode] (5) [below = 0.5cm of 4, label=0:{$\{\}$}]{5};
+  \node[mynode] (6) [below right = 0.8cm of 3, label=north:merge, label=0:{$\{\}$}]{6};
   \node[mynode] (7) [below left = 1cm of 6]{7};
   \node[mynode] (8) [below right = 1cm of 6]{8};
   \coordinate[below = 0.5cm of 7] (e7);
@@ -53,8 +53,8 @@ In addition, we specify a new constraints CPA to track constraints on these symb
     (8) edge node [right] {\textbf{return -1}} (e8)
   ;
 \end{tikzpicture}
-\caption{Analysis of the program in Listing \ref{exProg} by the value analysis CPA. The current state of the CPA is noted after every assignment edge.}
 \label{exGraph}
+\caption{Analysis of the program in Listing \ref{exProg} by the value analysis CPA. The current state of the CPA is noted after every assignment edge.}
 \end{figure}
 
 First, we will give the formal specification of a composite CPA (which we will call symbolic execution CPA) using these two components. After this, an implementation of this CPA based on CPAchecker and its performance based on test sets of SV-COMP 2015 will be presented.
