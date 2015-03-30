@@ -64,13 +64,23 @@ $\symexpset$ is the set of all valid symbolic expressions. Each expression is a 
 %using $\circ \in \{+, -, *, / , \% , \ll , \gg , \&, |, \oplus\}$.
 The definition range of a function $f$ is defined as $\text{def}(f) = \{x\ | \exists y: f(x) = y\}$. The definition range of an abstract variable assignment of the type $V_\symex$ consists of all program variables $x \in X$ whose value is known, with $X$ being the set of all program variables occurring in the program. There are multiple reasons for unknown values: Uninitialized variables are unknown, but input values or calls to unknown functions and operations are, too.
 
-For two abstract states $v, v' \in V_\symex$, state $v$ is lesser than or equal to $v'$, noted as $v \lesserEqual v'$, if all of the following conditions hold:
-(1) $v'$ must not consist of more value assignments than $v$, that is $\text{def}(v') \subseteq \text{def}(v)$,
+To define $\lesserEqual$, we first have to define the relation between concrete and abstract states.
+A concrete state $c \in C$ is \emph{compliant} to an abstract variable assignment $v$, if an arbitrary, but valid assignment of concrete values to symbolic identifiers $d: S_I \rightarrow \integerset$ exists, so that for all $x \in def(v)$ one of the following conditions is fulfilled:
+(1) the abstract assignment is a concrete value that equals the value in the concrete state, that means $c(x) = v(x)$, or
+(2) the abstract assignment $v(x)$ is a symbolic value that can be evaluated to $c(x)$ by replacing all occurring symbolic identifiers $i \in \symidset$ with $d(i)$.
+The concretization function $\concretization$ then assigns all compliant concrete states to an abstract state $v$.
+
+For two abstract states $v, v' \in V_\symex$, the concrete states that are covered by $v$ are a subset of the ones covered by $v'$, noted as $v \lesserEqual v'$, if all of the following conditions hold:
+(1) $v'$ must only contain value assignments also present in $v$, that is $\text{def}(v') \subseteq \text{def}(v)$,
 (2) $\forall x \in \text{def}(v'): v'(x) \in \integerset \Rightarrow v'(x) = v(x)$ and
 (3) a bijective function $\text{alias}:\symidset \rightarrow \symidset$ exists
 that maps each symbolic identifier of $\symidset$ to another symbolic identifier,
 so that $\forall x \in \text{def}(v'): v'(x) \in \valueset_\symex \Rightarrow v(x)$ results from $v'(x)$ by replacing all $i \in \symidset$ occurring in $v'(x)$ with $\text{alias}(i)$.
-Constraint 3 ensures that not the symbolic identifier's themselves are compared, but their coverage of concrete states (see the definition of the concretization function below).
+Constraint 3 ensures that not the symbolic values themselves are compared, but their coverage of concrete states.
+Consider $v = \{ (a, s1), (b, s1 + 5) \}$ and $v' = \{ (a, s2), (b, s2 + 5) \}$ with $a, b \in X$ and $s1, s2 \in S_I$. As $s1$ and $s2$ represent any possible value, $v$ represents the same amount of concrete states as $v'$, that is all $c \in C$ with $c(b) = c(a) + 5$ and an arbitrary $c(a)$. Because of this, $v' \lesserEqual v$ (and in this case even $v \lesserEqual v'$).
+
+Note that $v' \lesserEqual v \Rightarrow \llbracket v' \rrbracket \subseteq \llbracket v \rrbracket$,
+but $\llbracket v' \rrbracket \subseteq \llbracket v \rrbracket \centernot\Rightarrow v' \lesserEqual v$.
 
 The join $\leastupperbound$ holds the least upper bound of two lattice elements $v, v' \in V_\symex$ with
   \[ (v \leastupperbound v')(x) = v(x) \text{ for all } x \in \text{def}(v) \cap\ \text{def}(v') \text{ and } v(x) = v'(x) \text{.} \]
@@ -79,11 +89,6 @@ The top element of $\symlattice$ is defined as $v_\top = \{\}$, i.e. no known as
 % Ende semi-lattice definition
 % Fortsetzung domain definition
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-A concrete state $c \in C$ is \emph{compliant} to an abstract variable assignment $v$, if an arbitrary, but valid assignment of concrete values to symbolic identfiers $d: S_I \rightarrow \integerset$ exists, so that for all $x \in def(v)$ one of the following conditions is fulfilled:
-(1) the abstract assignment is a concrete value that equals the value in the concrete state, that means $c(x) = v(x)$, or
-(2) the abstract assignment $v(x)$ is a symbolic value that can be evaluated to $c(x)$ by replacing all occurring symbolic identifiers $i \in \symidset$ with $d(i)$.
-The concretization function $\concretization$ then assigns all compliant concrete states to an abstract state $v$.
 
 % Ende Domaene - Anfang Uebergangsfkt
 The transfer relation $\transfer_\symex$ contains the transfer $v \gtransfer v''$, if one of the following conditions is true:
