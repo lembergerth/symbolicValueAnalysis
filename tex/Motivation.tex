@@ -6,11 +6,10 @@ Configurable software verification\cite{Beyer2007} and its implementation CPAche
 multiple iterations of the Competition on Software Verification (SV-COMP).
 
 A prominent configurable program analysis (CPA) used in CPAchecker is the value analysis CPA \cite{Beyer2012}.
-But while it offers high efficiency, it cannot handle non-deterministic values.
+But while it offers high efficiency, it only tracks explicit values and cannot handle non-deterministic ones.
 Consider the simple example program in Listing \ref{exProg} and its analysis by the value analysis CPA in Figure \ref{exGraph}.
-It can easily be seen that the non-deterministic value is handled as an unknown value and as such is discarded.
+It can easily be seen that the non-deterministic value cannot be handled and as such is discarded.
 Because of this over-approximation, necessary information about the relation between $a$ and $b$ gets lost and the safety property in Line 14 is seen as violated.
-
 
 \begin{figure}[h]
 \label{exProg}
@@ -58,5 +57,4 @@ In addition, we specify a new constraints CPA to track constraints on these symb
 \end{figure}
 
 First, we will give the formal specification of a composite CPA (which we will call symbolic execution CPA) using these two components. After this, an implementation of this CPA based on CPAchecker and its performance based on test sets of SV-COMP 2015 will be presented.
-
-
+We will show that the addition of symbolic value tracking allows the correct analysis of a large amount of programs priorly not possible through the value analysis CPA.
