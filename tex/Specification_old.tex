@@ -1,0 +1,178 @@
+\newcommand{\symex}{\mathbb{S}}
+\newcommand{\constantprop}{\mathbb{CO}}
+\newcommand{\constraints}{\mathbb{C}}
+\newcommand{\location}{\mathbb{L}}
+\newcommand{\composition}{\mathscr{C}}
+
+\newcommand{\transfer}{\rightsquigarrow}
+\newcommand{\gtransfer}{\overset{g}{\transfer}}
+\newcommand{\strengthen}{\downarrow}
+
+\newcommand{\valueset}{\mathscr{Z}}
+\newcommand{\integerset}{\mathbb{Z}}
+
+\newcommand{\symlattice}{\mathscr{E}}
+\newcommand{\symidset}{S_I}
+\newcommand{\symexpset}{S_E}
+
+\newcommand{\constraintlattice}{\mathscr{C}}
+
+\newcommand{\llbracket}{[\![}
+\newcommand{\rrbracket}{]\!]}
+\newcommand{\concretization}{\llbracket \cdot \rrbracket}
+\newcommand{\lesserEqual}{\sqsubseteq}
+\newcommand{\leastupperbound}{\sqcup}
+
+\renewcommand{\or}{\vee}
+\newcommand{\satisfies}{\vDash}
+
+\section{Formal definition of a CPA for symbolic execution}
+Assumption: All occurring values are integers.
+
+\subsection{Extension of ValueAnalysisCPA with symbolic values}
+Bei der implementierten Value-Analysis CPA handelt es sich um eine Erweiterung der in [Beyer2014] beschriebenen Constant Propagation CPA.
+Die Value-Analysis CPA 
+\[\symex = (D_\symex,\ \transfer_\symex,\ merge_\symex,\ stop_\symex)\]
+mit
+\begin{enumerate}
+  \item $D_\symex = (C,\ \symlattice,\ \concretization )$, wobei:
+    \begin{itemize}
+      \item $C$ die Menge der konkreten Programmzust\"ande,
+      \item $\symlattice = (X \rightarrow (\valueset_\constantprop \cup \valueset_\symex),\ 
+                            \lesserEqual,\ 
+                            \leastupperbound,\ 
+                            v_\top
+                          )$
+            mit
+            \begin{itemize}
+              \item $X$ Menge von Programmvariablen,
+              \item $\valueset_\constantprop = \integerset \cup {\top_\valueset}$
+              \item $\valueset_\symex = \symidset \cup \symexpset$.
+
+               $\symidset$ ist dabei die Menge aller symbolischen Identifier und
+               $\symexpset$ die Menge aller symbolischen Ausdr\"ucke, die induktiv wie folgt definiert ist:
+               \begin{itemize}
+                \item F\"ur $a, b \in (\symidset \cup \integerset) \text{ gilt: } (a \circ b) \in \symexpset$
+                \item F\"ur $c, d \in S_E \text{ gilt: } (c \circ d) \in \symexpset$
+               \end{itemize}
+                    mit $\circ \in \{+,\ -,\ *,\ / ,\ \% ,\ \ll ,\ \gg , \&,\ |,\ \oplus\}$
+
+              \item $\lesserEqual$ ist definiert mit
+                \[ v \lesserEqual v' \text{ falls } \forall x \in X: v(x) = v'(x) \or v'(x) = \top_\valueset \]
+            
+              \item $\leastupperbound$ h\"alt die kleinste obere Schranke mit
+                \[ (v \leastupperbound v')(x) = \begin{dcases}
+                    v(x) & \text{ falls $v(x) = v'(x)$} \\
+                  \top_\valueset & \text{ sonst }
+                \end{dcases}
+                \]
+              \item $v_\top(x) = \top_\valueset$ f\"ur alle $x \in X$. 
+            \end{itemize}
+
+
+      \item Ein konkreter Zustand $c \in C$ ist zu einer abstrakten Variablenzuweisung $v$ kompatibel,
+            falls
+              \begin{enumerate}[1.]
+                \item $c(x) = v(x)$
+                \item $v(x) = \top_\valueset$ oder
+                \item $v(x) \in \valueset_\symex$ und eine Zuweisung $v': S_I \rightarrow \integerset$ existiert, so dass $v''(x) = c(x)$, wobei $v''(x)$ durch Ersetzen aller $a \in S_I$ in $v(x)$ durch $v'(a)$ entsteht.
+              \end{enumerate}
+
+          Die Konkretisierungsfunktion $\concretization$ weist einem abstrakten Zustand $v$ alle konkreten Zust\"ande zu, die zu $v$ kompatibel sind.
+    \end{itemize}
+
+% Ende Domaene - Anfang Uebergangsfkt
+  \item Die \"Ubergangsfunktion $\transfer_\symex$ besitzt den \"Ubergang $v \gtransfer v'$ falls:
+    \begin{enumerate}[1.]
+      \item $g = (l, assume(p), l')$, $\phi (p, v)$ erf\"ullbar und f\"ur alle $x \in X$ gilt:
+        \[
+          v'(x) = \begin{dcases}
+            c    & \text{falls $c$ die einzige erf\"ullende Belegung f\"ur $\phi (p, v)$}\\
+            y    & \parbox[t]{.6\textwidth}{ falls $v(x) = \top_\valueset$ und $x$ in $p$ vorkommt. Dabei $y \in S_I$ und y ein neuer Wert, der bisher in keinem Zustand verwendet wurde.}\\
+            v(x) & \text{sonst }              
+          \end{dcases}
+        \]
+        mit \[\phi (p, v) := p \wedge (\displaystyle\bigwedge_{x \in X,\atop {v(x) \in \integerset}} x = v(x))\]
+        $\phi$ f\"uhrt eine \"Uberapproximierung durch, da nur Werte $x \in X$ betrachtet werden, die einen expliziten Wert besitzen.
+
+      \item $g = (l, w := e, l')$ und f\"ur alle $x \in X$ gilt:
+        \[
+          v'(x) = \begin{dcases}
+            eval(e, v) & \text{ falls $x = w$} \\
+            v(x)       & \text{ sonst}
+          \end{dcases}
+        \]
+        Wobei f\"ur einen Ausdruck $e$ \"uber die Variablen in $X$ gilt:
+        \[
+          eval(e, v) := \begin{dcases}
+            y & \parbox[t]{.6\textwidth}{ falls $v(x) = \top_\valueset$ f\"ur ein in $e$ enthaltenes $x \in X$,
+                       mit $y \in S_I$ und $v(a) \neq y$ f\"ur alle $a \in X$ } \\
+            z & \parbox[t]{.6\textwidth}{ sonst, wobei $e$ partiell zu $z$ ausgewertet wird, indem jede Variable $x$ in $e$ durch $v(x)$ ersetzt wird. (Evtl. gilt $z \in S_E$) }
+          \end{dcases}
+        \]
+
+      \item $v' = v_\top$.
+    \end{enumerate}
+
+  \item $merge_\symex = merge^{sep}$, d.h. Zust\"ande werden nach Branches nicht gemerged.
+  \item $stop_\symex = stop^{sep}$, d.h. jeder Zustand wird einzeln betrachtet.
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Beginn ConstraintsCPA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{ConstraintsCPA}
+
+Die ConstraintsCPA ist eine CPA \[\constraints = (D_\constraints,\ \transfer_\constraints,\ merge_\constraints,\ stop_\constraints)\] welche Constraints (d.h. boolesche Formeln) verwendet, um die Erf\"ullbarkeit von assumes zu bestimmen. 
+\begin{enumerate}
+  \item $D_\constraints = (C,\ \constraintlattice,\ \concretization)$ mit:
+    \begin{itemize}
+      \item $C$ Menge der konkreten Programmzust\"ande,
+
+      \item $\constraintlattice = (2^\gamma, \lesserEqual, \leastupperbound, \top)$. Dabei ist:
+        \begin{itemize}
+          \item $\gamma$ die Menge aller m\"oglichen Constraints, die wie folgt definiert sind: 
+              F\"ur $a, b \in \valueset_\constantprop \cup \valueset_\symex$ gilt:
+              \begin{itemize}
+                \item $(a \circ b) \in \gamma \text{ mit } \circ \in \{ ==,\ <,\ \leq ,\ >,\ \geq \}$.
+                \item $!a \in \gamma$
+              \end{itemize}
+          \item $\lesserEqual$ definiert als $a \lesserEqual a'$, falls $a' \subseteq a$
+          \item $\leastupperbound$ definiert als $a \leastupperbound a' = a \cap a'$
+        \end{itemize} 
+
+      \item $\concretization$ ist definiert als 
+        \[ \llbracket a \rrbracket = \{ c \in C |\ c \satisfies \displaystyle\bigwedge_{\varphi \in a} \varphi \} \]
+        Bemerkung: Es gelte $\displaystyle\bigwedge_{\varphi \in \{\}} \varphi = true$
+    \end{itemize}
+
+  \item Die \"Ubergangsfunktion $\transfer_\constraints$ besitzt den \"Ubergang $a \gtransfer_\constraints a$ f\"ur alle $a \in \constraints$.
+        Neue Zust\"ande werden nur im Strengthening mit anderen CPAs (hier konkret der Value-Analysis) erzeugt.
+
+  \item $merge_\constraints = merge^{sep}$
+  \item $stop_\constraints = stop^{sep}$
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Beginn Composition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Composition von LocationCPA, Value-Analysis und ConstraintsCPA}
+$\composition_{\location\symex\constraints} = (\location,\ \symex,\ \constraints,\ \transfer_x,\ merge_x,\ stop_x)$ ist die CompositeCPA der Komposition von LocationCPA, Value-Analysis CPA und ConstraintsCPA.
+  \begin{enumerate}
+    \item $\transfer_x : D_\symex \times D_\constraints \rightarrow D_\symex \times D_\constraints$ besitzt
+          den \"Ubergang $(l, v, a) \gtransfer_x (l', v', a')$,
+          falls:
+          \begin{itemize}
+            \item $l \gtransfer_\location l'$,
+            \item $v \gtransfer_\symex v'$,
+            \item $a \gtransfer_\constraints a$,
+            \item $\strengthen_{\constraints, \symex} (a, v')$ definiert ist und
+            \item $\strengthen_{\constraints, \symex} (a, v') = a'$.
+          \end{itemize}
+    \item $merge_x = merge^{sep}$
+    \item $stop_x = stop^{sep}$
+  \end{enumerate}
+\subsubsection{Strengthening}
+  $\strengthen_{\constraints, \symex} : \constraints \times \symex \rightarrow \constraints$ benutzt konkrete Werte $v(x)$ aus dem zweiten gegebenen Zustand, um die Variablen, die in Constraints des ersten Zustands vorkommen, durch konkrete Werte zu ersetzen.
+$\strengthen_{\constraints, \symex} (a, v) = a'$ ist definiert, falls $\displaystyle\bigwedge_{\varphi \in a'} \varphi$ erf\"ullbar, wobei gilt, dass $a'$ aus $a$ durch Ersetzen aller $x \in X$ durch $v(x)$ entsteht.
+
