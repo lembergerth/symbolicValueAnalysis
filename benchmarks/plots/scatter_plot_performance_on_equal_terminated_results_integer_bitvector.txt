@@ -1,5 +1,5 @@
 set term pdf
-set output "sp_performanceOnCorrectResults_integer_bitvector_theory.pdf"
+set output "sp_performanceOnEqualAndTerminatedResults_integer_bitvector_theory.pdf"
 set grid
 set xlabel "CPU Time (s) for integer theory"
 set ylabel "CPU Time (s) for bitvector + float theory"
