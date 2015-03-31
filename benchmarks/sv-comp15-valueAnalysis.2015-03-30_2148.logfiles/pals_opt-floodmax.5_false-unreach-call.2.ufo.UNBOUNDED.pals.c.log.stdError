@@ -1,0 +1,5 @@
+Exception in thread Thread-2 (most likely raised during interpreter shutdown):
+Traceback (most recent call last):
+  File "/opt/python2.7/lib/python2.7/threading.py", line 808, in __bootstrap_inner
+  File "/tmp/vcloud-cloudy/worker/tmp_724858156/benchmark/oomhandler.py", line 122, in run
+<type 'exceptions.AttributeError'>: 'NoneType' object has no attribute 'close'
