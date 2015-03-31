@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>Symbolic Execution in CPAchecker supplementary page</title>
+</head>
+<body>
+<div style="max-width: 50%">
+<h1>Symbolic Execution in CPAchecker</h1>
+
+This is the supplementary web page for the <a href="./SymEx_in_CPAchecker.pdf">report on symbolic execution in CPAchecker</a>.
+
+<h2>Abstract</h2>
+<p>
+The value analysis of CPAchecker, a successful tool for configurable software verification, possesses high performance but is not able to handle non-deterministic values.
+This results in a high amount of falsely positive results.
+While counterexample-checks with other analyses are currently used to solve this problem, we extend the existing value analysis to allow the handling of non-deterministic values and introduce a new configurable program analysis (CPA) to track relations between such values.
+Our evaluation shows that this allows us to analyze test programs that use non-deterministic values correctly without the need for counterexample-checks.
+</p>
+
+<h2>Content</h2>
+<p>
+All executed benchmarks are available as <a href="./symEx_in_CPAchecker_eval.tar.gz">archive</a>.
+This includes all test results, logfiles and different summaries as html and csv as used in the report.
+</p>
+
+<h2>Results</h2>
+<p>The result tables are included in the archive above, but are also available separately:
+<ul>
+  <li>An overview of all performed evaluations, that is <b>symbolic execution with integer theory</b> (900s timelimit), <b>symbolic execution with bitvector and float theory</b> (900s and 1800s timelimit) and <b>value analysis</b> (900s timelimit) is available <a href="./benchmarks/all_runs_overview.html">here</a>.</li>
+  <li>The difference between the use of integer theory in SMT solving and bitvector and float theory (both 900s timelimit) is available <a href="./benchmarks/integer_bitvector_theory_diff.html">here</a>.</li>
+  <li>The difference between the use of <b>symbolic execution with bitvector and float theory</b> and <b>value analysis</b> is available <a href="./benchmarks/symbolic_explicit_diff.html">here</a></li>
+</ul>
+</p>
+</div>
+</body>
+</html>
