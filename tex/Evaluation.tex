@@ -12,7 +12,7 @@ A Java heap memory limit of 10.5GB per run was used.
 
 All benchmark results are available at \url{http://leostrakosch.github.io/symbolicValueAnalysis}.
 
-\begin{figure}
+\begin{figure}[h]
 \begin{tabular}{| r || r | r | r |}
 \hline
                      & Value & SymEx & Overall \\ \hline
@@ -43,13 +43,19 @@ While basic value analysis only needs 1241 iterations to find a possible propert
 analysis with symbolic execution needs 14572 iterations with the biggest waitlist consisting of 543 states to find the same property violation.
 The scatter plot in Figure \ref{graph:computedSuccessors} displays this problem.
 For some tasks, symbolic execution is able to compute the result with less successors than value analysis due to its stronger precision. But in many cases, symbolic execution computes far more successors because of this.
-\begin{figure}
+\begin{figure}[h]
 \includegraphics[width=\linewidth]{sp_reachedSetsOnTerminatedAndEqualResults_symbolic_explicit}
 \caption{Number of computed successors for \valueAnalysisCPA\ and \symbolicExecutionCPA.
          Only the computed successors for benchmark runs are displayed which returned a result for both \symbolicExecutionCPA\ and \valueAnalysisCPA\ and for which the result was the same. The upper bound used for computed successors is 20,000.}
 \label{graph:computedSuccessors}
 \end{figure}
 In addition to this enormous growth in iterations, SAT checks are responsible for up to 95.0\% of CPU time in analyses of programs using non-deterministic values that are \emph{not} specifically constructed for challenging SAT solvers.
+This influences the computation time per successor. As can be seen in Figure \ref{graph:computedSuccessorsPerS}, there are many cases in which \symbolicExecutionCPA\ takes significantly longer to compute successors than \valueAnalysisCPA.
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{sp_computedSuccessorsPerSecond_symbolic_explicit}
+\caption{Number of computed successors per second for \valueAnalysisCPA\ and \symbolicExecutionCPA}
+\label{graph:computedSuccessorsPerS}
+\end{figure}
 
 Despite this reduced speed, symbolic execution's ability to track non-deterministic values allows it to get a correct result in 35 cases in which value analysis does not. In seven of these value analysis exceeds the timelimit and in 28 value analysis provides a false positive. Symbolic execution does never produce a false result when value analysis produces a correct one.
 
@@ -63,7 +69,7 @@ By using an integer theory instead of bitvector, runtime can be greatly improved
 The scatter plot in Figure \ref{graph:bitvecIntCompGraph} illustrates the runtime improvements of integer theory over bitvector.
 This results in a lower precision and an unsound analysis, though.
 Figure \ref{tab:bitvecIntComp} shows the difference between the use of a bitvector theory with floats and the use of an integer theory.
-\begin{figure}
+\begin{figure}[h]
 \begin{tabular}{| r || r | r |}
 \hline
 & Bitvector theory & Integer theory \\ \hline
@@ -78,7 +84,7 @@ memory errors   &    1 &    1 \\ \hline
 \label{tab:bitvecIntComp}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 \includegraphics[width=\linewidth]{sp_performanceOnEqualAndTerminatedResults_integer_bitvector_theory}
 \caption{Runtime performance of symbolic execution using an integer theory in comparison to bitvector + float theory.
 \label{graph:bitvecIntCompGraph}

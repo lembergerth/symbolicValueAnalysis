@@ -1,11 +1,11 @@
 set term pdf
-set output "sp_computedSuccessorsPerSecondOnTerminatedAndEqualResults_symbolic_explicit.pdf"
+set output "sp_computedSuccessorsPerSecond_symbolic_explicit.pdf"
 set grid
-set xlabel "Computed successors of value analysis"
-set ylabel "Computed successors of symbolic execution"
+set xlabel "Computed successors of value analysis / s"
+set ylabel "Computed successors of symbolic execution / s"
 
 set size ratio -1
 set logscale x 10
 set logscale y 10
-plot [1:500] [1:500] 'symEx_explicit_computedSuccessorsPerTimeOfOnlyTerminatedAndEqual.csv' using ($4/$3):($2/$1) with points lt -1 pt 1 notitle
+plot [1:5000] [1:5000] 'symEx_explicit_computedSuccessorsPerTime.csv' using ($2/$1):($4/$3) with points lt -1 pt 1 notitle
 quit
