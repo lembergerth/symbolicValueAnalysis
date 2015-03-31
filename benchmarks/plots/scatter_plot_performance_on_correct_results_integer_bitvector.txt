@@ -1,0 +1,11 @@
+set term pdf
+set output "sp_performanceOnCorrectResults_integer_bitvector_theory.pdf"
+set grid
+set xlabel "CPU Time (s) for integer theory"
+set ylabel "CPU Time (s) for bitvector + float theory"
+
+set size ratio -1
+set logscale x 10
+set logscale y 10
+plot [1:1000] [1:1000] 'int_bitv_theory_only_terminated.csv' with points lt -1 pt 1 notitle
+quit

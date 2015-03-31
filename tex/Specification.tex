@@ -26,7 +26,7 @@
 \newcommand{\satisfies}{\vDash}
 
 \section{Specification}
-The symbolic execution CPA is a composite CPA of the \emph{location CPA}, the \emph{symbolic value CPA} which tracks and computes the deterministic and non-deterministic values of variables and the \emph{constraints CPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of composite CPA and location CPA are used as defined in \cite{Beyer2007}.
+The symbolic execution CPA is a composite CPA of the \emph{location CPA}, which tracks the current location in the syntactic structure of the program, the \emph{symbolic value CPA} which tracks and computes the deterministic and non-deterministic values of variables and the \emph{constraints CPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of composite CPA and location CPA are used as defined in \cite{Beyer2007}.
 
 For the sake of formal simplicity, we assume that all values are integers and that a program only consists of assignments and assumptions.
 
