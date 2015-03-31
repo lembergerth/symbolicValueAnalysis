@@ -12,6 +12,12 @@
 \usetikzlibrary{positioning}
 
 \begin{document}
+\newcommand{\valueAnalysisCPA}{ValueAnalysisCPA}
+\newcommand{\constraintsCPA}{ConstraintsCPA}
+\newcommand{\locationCPA}{LocationCPA}
+\newcommand{\symbolicExecutionCPA}{SymbolicExecutionCPA}
+\newcommand{\symbolicValueCPA}{SymbolicValueCPA}
+\newcommand{\compositeCPA}{CompositeCPA}
 \sloppy
 \title{Symbolic Execution in CPAchecker}
 \subtitle{}
@@ -24,11 +30,11 @@
 \maketitle
 
 \begin{abstract}
-  The value analysis of CPAchecker, a successful tool for configurable software verification, possesses high performance but is not able to handle non-deterministic values.
-This results in a high amount of falsely positive results.
-While counterexample-checks with other analyses are currently used to solve this problem,
+  The value analysis of CPAchecker, a successful tool for configurable software verification, possesses high performance but is not able to handle non-deterministic values in general.
+This results in a high amount of false alarms.
+While counterexample checks with other analyses are currently used to mitigate this problem,
 we extend the existing value analysis to allow the handling of non-deterministic values and introduce a new configurable program analysis (CPA) to track relations between such values.
-Our evaluation shows that this allows us to analyze test programs that use non-deterministic values correctly without the need for counterexample-checks.
+Our evaluation shows that this allows analyzing programs that use non-deterministic values correctly without the need for counterexample checks.
 \end{abstract}
 
 \input{Motivation}

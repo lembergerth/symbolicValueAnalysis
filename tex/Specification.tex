@@ -26,14 +26,16 @@
 \newcommand{\satisfies}{\vDash}
 
 \section{Specification}
-The symbolic execution CPA is a composite CPA of the \emph{location CPA} which tracks the current location in the syntactic structure of a program, the \emph{symbolic value CPA} which tracks and computes the deterministic and non-deterministic values of variables and the \emph{constraints CPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of composite CPA and location CPA are used as defined in \cite{Beyer2007}.
+The \symbolicExecutionCPA\ is a composite CPA of the \emph{\locationCPA}, which tracks the current location in the syntactic structure of a program,
+the \emph{\symbolicValueCPA}, which tracks and computes the deterministic and non-deterministic values of variables and
+the \emph{\constraintsCPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of \compositeCPA\ and \locationCPA\ are used as defined in \cite{Beyer2007}.
 
-For the sake of formal simplicity, we assume that all values are integers and that a program only consists of assignments and assumptions.
+For the sake of simplicity, we assume that all values are integers and that a program only consists of assignments and assumptions.
 
-\subsection{Symbolic value CPA}
-The described CPA is an extension of the priorly mentioned value analysis CPA.
+\subsection{\symbolicValueCPA}
+The described CPA is an extension of the priorly mentioned \valueAnalysisCPA.
 Instead of using a bottom element $\bot$, we represent an unreachable state through the absence of a valid transfer.
-The symbolic value CPA is defined as
+The \symbolicValueCPA\ is defined as
 \[\symex = (D_\symex, \transfer_\symex, merge^{sep}\ stop^{sep})\]
 with abstract domain $D_\symex$, transfer relation $\transfer_\symex$, merge operator $merge^{sep}$ and stop operator $stop^{sep}$.
 
@@ -62,7 +64,9 @@ $\symexpset$ is the set of all valid symbolic expressions. Each expression is a 
 %    \text{(2) }& c, d \in S_E \Rightarrow (c \circ d) \in \symexpset
 %  \end{align*}
 %using $\circ \in \{+, -, *, / , \% , \ll , \gg , \&, |, \oplus\}$.
-The definition range of a function $f$ is defined as $\text{def}(f) = \{x\ | \exists y: f(x) = y\}$. The definition range of an abstract variable assignment of the type $V_\symex$ consists of all program variables $x \in X$ whose value is known, with $X$ being the set of all program variables occurring in the program. There are multiple reasons for unknown values: Uninitialized variables are unknown, but input values or calls to unknown functions and operations are, too.
+The definition range of a function $f$ is defined as $\text{def}(f) = \{x\ | \exists y: f(x) = y\}$. The definition range of an abstract variable assignment of the type $V_\symex$ consists of all program variables $x \in X$ whose value is known, with $X$ being the set of all program variables occurring in the program.
+If a program variable $x \in X$ has no assignment for an abstract state $v \in V_\symex$, its value is unknown.
+There are multiple reasons for unknown values: Uninitialized variables are unknown, but input values or calls to unknown functions and operations are, too.
 
 To define $\lesserEqual$, we first have to define the relation between concrete and abstract states.
 A concrete state $c \in C$ is \emph{compliant} to an abstract variable assignment $v$, if an arbitrary, but valid assignment of concrete values to symbolic identifiers $d: S_I \rightarrow \integerset$ exists, so that for all $x \in def(v)$ one of the following conditions is fulfilled:
@@ -76,13 +80,16 @@ For two abstract states $v, v' \in V_\symex$, the concrete states that are cover
 (3) a bijective function $\text{alias}:\symidset \rightarrow \symidset$ exists
 that maps each symbolic identifier of $\symidset$ to another symbolic identifier,
 so that $\forall x \in \text{def}(v'): v'(x) \in \valueset_\symex \Rightarrow v(x)$ results from $v'(x)$ by replacing all $i \in \symidset$ occurring in $v'(x)$ with $\text{alias}(i)$.
-Constraint 3 ensures that not the symbolic values themselves are compared, but their coverage of concrete states.
-Consider $v = \{ (a, s1), (b, s1 + 5) \}$ and $v' = \{ (a, s2), (b, s2 + 5) \}$ with $a, b \in X$ and $s1, s2 \in S_I$. As $s1$ and $s2$ represent any possible value, $v$ represents the same amount of concrete states as $v'$, that is all $c \in C$ with $c(b) = c(a) + 5$ and an arbitrary $c(a)$. Because of this, $v' \lesserEqual v$ (and in this case even $v \lesserEqual v'$).
+Constraint (3) ensures that not the symbolic values themselves are compared,
+but the number of concrete states they represent.
+Consider $v = \{ (a, s1), (b, s1 + 5) \}$ and $v' = \{ (a, s2), (b, s2 + 5) \}$ with $a, b \in X$ and $s1, s2 \in S_I$.
+As $s1$ and $s2$ represent any possible value, $v$ represents the same amount of concrete states as $v'$, that is all $c \in C$ with $c(b) = c(a) + 5$ and an arbitrary $c(a)$.
+Because of this, $v' \lesserEqual v$ holds (and in this case even $v \lesserEqual v'$).
 
 Note that $v' \lesserEqual v \Rightarrow \llbracket v' \rrbracket \subseteq \llbracket v \rrbracket$,
 but $\llbracket v' \rrbracket \subseteq \llbracket v \rrbracket \centernot\Rightarrow v' \lesserEqual v$.
 
-The join $\leastupperbound$ holds the least upper bound of two lattice elements $v, v' \in V_\symex$ with
+The join $\leastupperbound$ represents the least upper bound of two lattice elements $v, v' \in V_\symex$ with
   \[ (v \leastupperbound v')(x) = v(x) \text{ for all } x \in \text{def}(v) \cap\ \text{def}(v') \text{ and } v(x) = v'(x) \text{.} \]
 The top element of $\symlattice$ is defined as $v_\top = \{\}$, i.e. no known assignments exist. It represents all possible concrete assignments, formally expressed as $\llbracket v_\top \rrbracket = C$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -103,7 +110,7 @@ The transfer relation $\transfer_\symex$ contains the transfer $v \gtransfer v''
         \]
         with \[\phi (p, v) := p \wedge (\displaystyle\bigwedge_{x \in \text{def}(v),\atop {v(x) \in \integerset}} x = v(x))\]
 
-        Note: $\phi$ performs an over-approximation, as only variables $x \in \text{def}(v)$ with an explicit value are considered.
+        Note: $\phi$ performs an over-approximation, as only variables $x \in \text{def}(v)$ with a concrete value are considered.
 
       \item $g = (l, w := e, l')$ and:
         \[
@@ -130,16 +137,16 @@ It is defined as $\text{stop}^{sep}(e, R) = \exists e' \in R: e \lesserEqual e'$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Beginn ConstraintsCPA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Constraints CPA}
+\subsection{\constraintsCPA}
 
-The constraints CPA is a CPA \[\constraints = (D_\constraints, \transfer_\constraints, merge^{sep}, stop^{sep})\] that tracks constraints (i.e. boolean formulas) on variables that are created by assume edges.
+The \constraintsCPA\ is a CPA \[\constraints = (D_\constraints, \transfer_\constraints, merge^{sep}, stop^{sep})\] that tracks constraints (i.e. boolean formulas) on variables that are created by assume edges.
 The abstract domain $D_\constraints$ is defined by 
 \[D_\constraints = (C, \constraintlattice, \concretization)\]
 with concrete states $C$, the semi-lattice $\constraintlattice$ and concretization function $\concretization$.
 
-The abstract states described by $\constraintlattice = (2^\gamma, \lesserEqual, \leastupperbound, \top)$ consist of constraints of $\gamma$.
-$\gamma$ contains all possible boolean expressions over $\integerset \cup \valueset_\symex$, including symbolic expressions.
-An abstract state $a \in \constraintlattice$ is interpreted as the conjunction of all its constraints.
+The abstract states described by $\constraintlattice = (2^\gamma, \lesserEqual, \leastupperbound, \top)$ are subsets of $\gamma$.
+$\gamma$ is the set of all possible boolean expressions over $\integerset \cup \valueset_\symex$, including symbolic expressions.
+An abstract state $a \in \constraintlattice$ can be interpreted as the conjunction of all its constraints.
 %% Redundant with "all boolean expressions
 %This can be expressed in the following formal way:
 % \begin{align*}
@@ -147,33 +154,32 @@ An abstract state $a \in \constraintlattice$ is interpreted as the conjunction o
 %   \text{with } \gamma_B = \{a \circ b\ |\ a, b \in \symlattice\} \text{ and } \circ \in \{ ==, <, \leq , >, \geq \}\text{.}$
 % \end{align*}
 
-For two given states $a, a' \in \constraintlattice$, state $a$ is lesser than or equal to $a'$, if a bijective funtion $\text{alias}: \symidset \rightarrow \symidset$ exists, so that $a'' \subseteq a$ with $a''$ resulting from $a'$ by replacing all symbolic identifiers $i \in \symidset$ occurring in constraints of $a'$ with $\text{alias}(i)$.
+For two given states $a, a' \in \constraintlattice$, state $a$ is less than or equal to $a'$, if a bijective funtion $\text{alias}: \symidset \rightarrow \symidset$ exists, so that $a'' \subseteq a$ with $a''$ resulting from $a'$ by replacing all symbolic identifiers $i \in \symidset$ occurring in constraints of $a'$ with $\text{alias}(i)$.
 
 The concretization function $\concretization$ maps an abstract state to all concrete states that satisfy this abstract state's constraints.
         \[ \llbracket a \rrbracket = \{ c \in C |\ c \satisfies \displaystyle\bigwedge_{\varphi \in a} \varphi \} \]
-        Note: We assume that the empty conjunction represents true, that means $\displaystyle\bigwedge_{\varphi \in \{\}} \varphi = true$.
+        Note: We assume that the empty conjunction represents true, that means $\displaystyle\bigwedge_{\varphi \in \phi} \varphi = true$ for $\phi = \{\}$.
 
-Constraint CPA's transfer relation $\transfer_\constraints$ contains the transfer $a \gtransfer_\constraints a'$ if one of the following conditions is fulfilled:
+The transfer relation $\transfer_\constraints$ contains the transfer $a \gtransfer_\constraints a'$ if one of the following conditions is fulfilled:
 (1) $g = (l, assume(p), l')$, $a' = a \cup {p}$ and $a$ does not contain any variable $x \in X$
-(by specifying that $a$ must not contain any variable we enforce that variables are always replaced by concrete (explicit or symbolic) values through strengthening), or
-(2) $a' = a$ otherwise.
+(by specifying that $a$ must not contain any variable we enforce that variables are always replaced by concrete or symbolic values through strengthening), or
+(2) $g = (l, w := e, l')$ and $a' = a$.
 
-As $p$ is only added as a constraint if no variable of $X$ occurs in $a$, all resulting states of this transfer relation will be satisfiable, unless $p$ is a contradiction ($a \neq a$, for instance). Because of this, we completely disregard checking for satisfiability of constraints here.
+As $p$ is only added as a constraint if no variable of $X$ occurs in $a$, all resulting states of this transfer relation will be satisfiable, unless $p$ is a contradiction (e.g. $a \neq a$). Because of this, we completely disregard checking for satisfiability of constraints here.
 Instead, we rely on satisfiability checks during strengthening by other CPAs.
-In the following we will use the priorly defined symbolic value CPA to replace newly added constraints' variables with values and check for the whole state's satisfiability.
+In the following we will use the priorly defined \symbolicValueCPA\ to replace newly added constraints' variables with values and check for the whole state's satisfiability.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Beginn Composition
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Composition of CPAs}
-$\composition_{\location\symex\constraints} = (\location, \symex, \constraints, \transfer_x, merge^{sep}, stop^{sep})$ is the composite CPA of a location CPA and the priorly defined symbolic value CPA and constraints CPA.
+$\composition_{\location\symex\constraints} = (\location, \symex, \constraints, \transfer_x, merge^{sep}, stop^{sep})$ is the composite CPA of the \locationCPA\ $\location$, the \symbolicValueCPA\ $\symex$ and the \constraintsCPA\ $\constraints$.
 The transfer relation \[\transfer_x : D_\location \times D_\symex \times D_\constraints \rightarrow D_\location \times D_\symex \times D_\constraints\] contains
-the transfer $(l, v, a) \gtransfer_x (l', v', a'')$ if 
+the transfer $(l, v, a) \gtransfer_x (l', v', a')$ if 
             $l \gtransfer_\location l'$,
             $v \gtransfer_\symex v'$ and
             $a \gtransfer_\constraints a'$ and
-            if the strengthen operator $\strengthen_{\constraints, \symex}$ is defined for $a'$ and $v'$ with
-            $\strengthen_{\constraints, \symex} (a', v') = a''$.
+            if the strengthen operator $\strengthen_{\constraints, \symex}$ is defined for $a'$ and $v'$.
 
 The strengthen operator $\strengthen_{\constraints, \symex} : \constraints \times \symex \rightarrow \constraints$ uses the value assignment $v(x)$ of the given second operand to replace variables of the latest, unstrengthened constraint of the given constraints state. This way, meaningful constraints are created that show relations between symbolic values and can be checked for satisfiability.
 
@@ -214,9 +220,9 @@ $\strengthen_{\constraints, \symex} (a, v) = a'$ is defined if $a'$ is the resul
     (7n) edge node [right] {\textbf{return 0}} (e7n)
   ;
 \end{tikzpicture}
-\caption{Analysis of the program in Listing \ref{exProg} by the symbolic execution CPA. The locations reported as unreachable are tinted grey. The state is provided as a tuple at each relevant node, the first element being the state of $\symex$, the second of $\constraints$. The state of the location CPA can be derived from the node's numbers.}
+\caption{Analysis of the program in Listing \ref{exProg} by the \symbolicExecutionCPA. The locations reported as unreachable are tinted grey. The state is provided as a tuple at each relevant node, the first element being the symbolic state of $\symex$, the second the constraints of $\constraints$. The state of the \locationCPA\ can be derived from the node's numbers.}
 \label{constGraph}
 \end{figure*}
 
-An analysis of the previous test program using symbolic execution can be seen in Figure \ref{constGraph}. 
-By storing information about the relationship of variables $a$ and $b$, the CPA can derive at location 6/6' that $b$ can't be smaller than $a$.
+An analysis of the example program (c.f. Listing \ref{exProg}) using symbolic execution can be seen in Figure \ref{constGraph}. 
+By storing information about the relationship of variables $a$ and $b$, the CPA can derive at location 6/6' that $b$ cannot be smaller than $a$.

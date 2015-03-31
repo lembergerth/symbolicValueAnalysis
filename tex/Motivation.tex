@@ -1,15 +1,15 @@
 \section{Motivation}
 With the rise of ubiquitious computing, reactive software systems that constantly receive input from the outside become more and more common.
-Because of their non\--func\-tio\-nal behaviour, the unreliability of testing becomes even more severe for such programs.
+Because of their non\--func\-tio\-nal behaviour, the unreliability of testing with a finite number of test values becomes even more severe for such programs.
 In constrast to this, automatic software verification offers a more reliable alternative by analyzing all possible behaviours of a program.
-Configurable software verification\cite{Beyer2007} and its implementation CPAchecker\cite{Beyer2011} represent a recent approach to software verification that has been successful in
+Configurable software verification\cite{Beyer2007} and one of its implementations CPAchecker\cite{Beyer2011} represent a recent approach to software verification that has been successful in
 multiple iterations of the Competition on Software Verification (SV-COMP) \cite{SV-COMP2013} \cite{SV-COMP2014} \cite{SV-COMP2015}.
 
-A prominent CPA used in CPAchecker is the value analysis CPA \cite{Beyer2013}.
-But while it offers high efficiency, it only tracks explicit values and cannot handle non-deterministic ones.
-Consider the simple example program in Listing \ref{exProg} and its analysis by the value analysis CPA in Figure \ref{exGraph}.
-It can easily be seen that the non-deterministic value cannot be handled and as such is discarded.
-Because of this over-approximation, necessary information about the relation between $a$ and $b$ gets lost and the safety property in Line 14 is seen as violated.
+A prominent CPA used in CPAchecker is the \valueAnalysisCPA\ \cite{Beyer2013}.
+While it offers high efficiency, it only tracks explicit values and cannot handle non-deterministic ones.
+Consider the simple example program in Listing \ref{exProg}. Its analysis by the \valueAnalysisCPA\ is displayed in Figure \ref{exGraph}.
+It can easily be seen that the non-deterministic value of $a$ cannot be handled and as such is discarded.
+Because of this imprecision, necessary information about the relation between $a$ and $b$ gets lost and the safety property in Line 14 is seen as violated.
 
 \begin{figure}[h]
 \label{exProg}
@@ -19,20 +19,20 @@ Because of this over-approximation, necessary information about the relation bet
 
 This characteristic results in a high amount of false positives.
 In practice, this problem is countered by the use of counterexample checks and strengthening through other CPAs.
-Instead of that, we will introduce symbolic values to the existing value analysis CPA to allow it tracking of non-deterministic values.
-In addition, we specify a new constraints CPA to track constraints on these symbolic values.
+Instead of that, we introduce symbolic values to the existing \valueAnalysisCPA\ to allow tracking of non-deterministic values.
+In addition, we specify a new \constraintsCPA\ to track constraints on these symbolic values.
 
 \begin{figure}[h]
 
 \begin{tikzpicture}[->,>=stealth, mynode/.style={circle, draw, minimum size=0.5cm}, every node/.style={font=\small}]
 
-  \node[mynode] (0) [label=0:{$\{\}$}]{0};
-  \node[mynode] (1) [below = 0.5cm of 0, label=0:{$\{\}$}]{1};
+  \node[mynode] (0) {0};
+  \node[mynode] (1) [below = 0.5cm of 0]{1};
   \node[mynode] (2) [below left = 1cm of 1]{2};
   \node[mynode] (4) [below right = 1cm of 1]{4};
-  \node[mynode] (3) [below = 0.5cm of 2, label=west:{$\{\}$}]{3};
-  \node[mynode] (5) [below = 0.5cm of 4, label=0:{$\{\}$}]{5};
-  \node[mynode] (6) [below right = 0.8cm of 3, label=north:merge, label=0:{$\{\}$}]{6};
+  \node[mynode] (3) [below = 0.5cm of 2]{3};
+  \node[mynode] (5) [below = 0.5cm of 4]{5};
+  \node[mynode] (6) [below right = 0.8cm of 3, label=north:merge]{6};
   \node[mynode] (7) [below left = 1cm of 6]{7};
   \node[mynode] (8) [below right = 1cm of 6]{8};
   \coordinate[below = 0.5cm of 7] (e7);
@@ -53,8 +53,7 @@ In addition, we specify a new constraints CPA to track constraints on these symb
   ;
 \end{tikzpicture}
 \label{exGraph}
-\caption{Analysis of the program in Listing \ref{exProg} by the value analysis CPA. The current state of the CPA is noted after every assignment edge.}
+\caption{Graph illustrating the analysis of the program in Listing \ref{exProg} by the \valueAnalysisCPA. The abstract state of the \valueAnalysisCPA\ is always empty as it does not track non-deterministic values. Because of this, states are merged at Location 6.}
 \end{figure}
 
-First, we will give the formal specification of a composite CPA (which we will call symbolic execution CPA) using these two components. After this, an implementation of this CPA based on CPAchecker and its performance based on test sets of SV-COMP 2015 will be presented.
-We will show that the addition of symbolic value tracking allows the correct analysis of a large amount of programs priorly not possible through the value analysis CPA.
+First, we will give the formal specification of a composite CPA (which we will call \symbolicExecutionCPA) using these two components. After this, an implementation of this CPA based on CPAchecker is presented. An evaluation on benchmarks taken from SV-COMP 2015 will show that the addition of symbolic value tracking allows the correct analysis of programs that could priorly not be solved by the \valueAnalysisCPA alone.
