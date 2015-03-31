@@ -23,9 +23,13 @@
 }
 \maketitle
 
-%\begin{abstract}
-%\input{Abstract}
-%\end{abstract}
+\begin{abstract}
+  The value analysis of CPAchecker, a successful tool for configurable software verification, possesses high performance but is not able to handle non-deterministic values.
+This results in a high amount of falsely positive results.
+While counterexample-checks with other analyses are currently used to solve this problem,
+we extend the existing value analysis to allow the handling of non-deterministic values and introduce a new configurable program analysis (CPA) to track relations between such values.
+Our evaluation shows that this allows us to analyze test programs that use non-deterministic values correctly without the need for counterexample-checks.
+\end{abstract}
 
 \input{Motivation}
 \Needspace{7\baselineskip}

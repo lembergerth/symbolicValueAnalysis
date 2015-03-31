@@ -5,7 +5,7 @@ In constrast to this, automatic software verification offers a more reliable alt
 Configurable software verification\cite{Beyer2007} and its implementation CPAchecker\cite{Beyer2011} represent a recent approach to software verification that has been successful in
 multiple iterations of the Competition on Software Verification (SV-COMP) \cite{SV-COMP2013} \cite{SV-COMP2014} \cite{SV-COMP2015}.
 
-A prominent configurable program analysis (CPA) used in CPAchecker is the value analysis CPA \cite{Beyer2013}.
+A prominent CPA used in CPAchecker is the value analysis CPA \cite{Beyer2013}.
 But while it offers high efficiency, it only tracks explicit values and cannot handle non-deterministic ones.
 Consider the simple example program in Listing \ref{exProg} and its analysis by the value analysis CPA in Figure \ref{exGraph}.
 It can easily be seen that the non-deterministic value cannot be handled and as such is discarded.

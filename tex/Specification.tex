@@ -2,7 +2,7 @@
 
 \newcommand{\constraints}{\mathbb{C}}
 \newcommand{\location}{\mathbb{L}}
-\newcommand{\composition}{\mathscr{C}}
+\newcommand{\composition}{\mathcal{C}}
 
 \newcommand{\transfer}{\rightsquigarrow}
 \newcommand{\gtransfer}{\overset{g}{\transfer}}
@@ -26,7 +26,7 @@
 \newcommand{\satisfies}{\vDash}
 
 \section{Specification}
-The symbolic execution CPA is a composite CPA of the \emph{location CPA}, which tracks the current location in the syntactic structure of the program, the \emph{symbolic value CPA} which tracks and computes the deterministic and non-deterministic values of variables and the \emph{constraints CPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of composite CPA and location CPA are used as defined in \cite{Beyer2007}.
+The symbolic execution CPA is a composite CPA of the \emph{location CPA} which tracks the current location in the syntactic structure of a program, the \emph{symbolic value CPA} which tracks and computes the deterministic and non-deterministic values of variables and the \emph{constraints CPA}, which tracks encountered assumptions in form of constraints for each location's variables. The formal definitions of composite CPA and location CPA are used as defined in \cite{Beyer2007}.
 
 For the sake of formal simplicity, we assume that all values are integers and that a program only consists of assignments and assumptions.
 
@@ -84,7 +84,7 @@ but $\llbracket v' \rrbracket \subseteq \llbracket v \rrbracket \centernot\Right
 
 The join $\leastupperbound$ holds the least upper bound of two lattice elements $v, v' \in V_\symex$ with
   \[ (v \leastupperbound v')(x) = v(x) \text{ for all } x \in \text{def}(v) \cap\ \text{def}(v') \text{ and } v(x) = v'(x) \text{.} \]
-The top element of $\symlattice$ is defined as $v_\top = \{\}$, i.e. no known assignments exist.
+The top element of $\symlattice$ is defined as $v_\top = \{\}$, i.e. no known assignments exist. It represents all possible concrete assignments, formally expressed as $\llbracket v_\top \rrbracket = C$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ende semi-lattice definition
 % Fortsetzung domain definition
@@ -108,8 +108,8 @@ The transfer relation $\transfer_\symex$ contains the transfer $v \gtransfer v''
       \item $g = (l, w := e, l')$ and:
         \[
           v''(x) = \begin{dcases}
-            eval(e, v') & \text{if $x = w$} \\
-            v'(x)       & \text{if $x \in$ def$(v)$}
+            \text{eval}(e, v') & \text{if $x = w$} \\
+            v'(x)       & \text{if $x \in$ def$(v)$ and $x \neq w$}
           \end{dcases}
         \]
       with \[
@@ -118,8 +118,8 @@ The transfer relation $\transfer_\symex$ contains the transfer $v \gtransfer v''
             v(x) & \text{if $x \in$ def$(v)$}
           \end{dcases}
       \]
-      and $eval(e, v')$ defined as the evaluation of an expression $e$ with the given assignment.
-      If any symbolic value occurs in $v(e)$, it is only partially evaluated. In this case, $eval(e, v') \in \valueset_\symex$.
+      and eval$(e, v')$ defined as the evaluation of an expression $e$ with the given assignment.
+      If any symbolic value occurs in $v(e)$, it is only partially evaluated. In this case, eval$(e, v') \in \valueset_\symex$.
 
       \item $v'' = v_\top$.
     \end{enumerate}
@@ -155,7 +155,7 @@ The concretization function $\concretization$ maps an abstract state to all conc
 
 Constraint CPA's transfer relation $\transfer_\constraints$ contains the transfer $a \gtransfer_\constraints a'$ if one of the following conditions is fulfilled:
 (1) $g = (l, assume(p), l')$, $a' = a \cup {p}$ and $a$ does not contain any variable $x \in X$
-(By specifying that $a$ must not contain any variable we enforce that variables are always replaced by concrete (explicit or symbolic) values through strengthening), or
+(by specifying that $a$ must not contain any variable we enforce that variables are always replaced by concrete (explicit or symbolic) values through strengthening), or
 (2) $a' = a$ otherwise.
 
 As $p$ is only added as a constraint if no variable of $X$ occurs in $a$, all resulting states of this transfer relation will be satisfiable, unless $p$ is a contradiction ($a \neq a$, for instance). Because of this, we completely disregard checking for satisfiability of constraints here.
@@ -172,7 +172,7 @@ the transfer $(l, v, a) \gtransfer_x (l', v', a'')$ if
             $l \gtransfer_\location l'$,
             $v \gtransfer_\symex v'$ and
             $a \gtransfer_\constraints a'$ and
-            if the strengthen operation $\strengthen_{\constraints, \symex}$ is defined for $a'$ and $v'$ with
+            if the strengthen operator $\strengthen_{\constraints, \symex}$ is defined for $a'$ and $v'$ with
             $\strengthen_{\constraints, \symex} (a', v') = a''$.
 
 The strengthen operator $\strengthen_{\constraints, \symex} : \constraints \times \symex \rightarrow \constraints$ uses the value assignment $v(x)$ of the given second operand to replace variables of the latest, unstrengthened constraint of the given constraints state. This way, meaningful constraints are created that show relations between symbolic values and can be checked for satisfiability.
