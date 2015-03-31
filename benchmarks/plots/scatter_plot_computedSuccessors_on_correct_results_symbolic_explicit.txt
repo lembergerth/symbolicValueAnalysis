@@ -1,0 +1,11 @@
+set term pdf
+set output "sp_reachedSetsOnTerminatedAndEqualResults_symbolic_explicit.pdf"
+set grid
+set xlabel "Computed successors of value analysis"
+set ylabel "Computed successors of symbolic execution"
+
+set size ratio -1
+set logscale x 10
+set logscale y 10
+plot [10:20000] [10:20000] 'symEx_explicit_computedSuccessorsOfOnlyterminatedAndEqual.csv' with points lt -1 pt 1 notitle
+quit
