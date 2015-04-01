@@ -50,7 +50,8 @@ For some tasks, symbolic execution is able to compute the result with less succe
 \label{graph:computedSuccessors}
 \end{figure}
 In addition to this enormous growth in iterations, SAT checks are responsible for up to 95.0\% of CPU time in analyses of programs using non-deterministic values that are \emph{not} specifically constructed for challenging SAT solvers.
-This influences the computation time per successor. As can be seen in Figure \ref{graph:computedSuccessorsPerS}, there are many cases in which \symbolicExecutionCPA\ takes significantly longer to compute successors than \valueAnalysisCPA.
+This influences the speed at which successors can be computed.
+As can be seen in Figure \ref{graph:computedSuccessorsPerS}, there are many benchmark runs in which \valueAnalysisCPA\ is able to compute significantly more successors per second (in average) than \symbolicExecutionCPA.
 \begin{figure}[h]
 \includegraphics[width=\linewidth]{sp_computedSuccessorsPerSecond_symbolic_explicit}
 \caption{Number of computed successors per second for \valueAnalysisCPA\ and \symbolicExecutionCPA}
